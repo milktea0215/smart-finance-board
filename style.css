@@ -1,0 +1,632 @@
+/* 頁面頂部 Hero Banner 區塊 */
+.content-section {
+    display: none;
+}
+
+.content-section.show {
+    display: block;
+}
+
+.hero-banner {
+    width: 100%;
+    height: 200px;
+    background-image: url("your-banner-image.jpg");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+/* 中央遮罩與文字 */
+.hero-overlay {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    /* 半透明黑遮罩 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-overlay h1 {
+    font-size: 48px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* 介紹區塊 */
+.hero-section {
+    background-color: #f8fbff;
+    padding: 60px 0;
+}
+
+.hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 50px;
+    padding: 0 40px;
+}
+
+.hero-text {
+    flex: 1;
+}
+
+.hero-text h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.hero-text p {
+    font-size: 16px;
+    color: #333;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.hero-text button {
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: #1C7C31;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.hero-image {
+    flex: 1;
+}
+
+.hero-image img {
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.switch-buttons {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    display: flex;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white; /* 加上背景，避免透出下方內容 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+.switch-btn {
+    flex: 1;
+    /* 平均分配寬度 */
+    padding: 15px 0;
+    font-size: 18px;
+    border: none;
+    background-color: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.switch-btn:hover {
+    background-color: #d0d0ff;
+}
+
+.switch-btn.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.explanation-text h2 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.explanation-text ul {
+    list-style: disc;
+    margin-left: 20px;
+    line-height: 1.6;
+}
+
+.explanation-block {
+    max-width: 1600px;
+    margin: 60px auto 30px auto; /* 合併原本兩個 margin */
+    padding: 20px 25px;
+    background-color: #ffffff;
+    border-left: 4px solid #007BFF;
+    font-size: 17px;
+    line-height: 1.8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.explanation-section {
+    background-color: #fdfdfd;
+    padding: 50px 60px;
+    border-top: 2px solid #eee;
+}
+
+.explanation-title {
+    font-size: 28px;
+    margin-bottom: 25px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.indicator-layout {
+    display: flex;
+    gap: 24px;
+}
+
+.indicator-sidebar {
+    width: 15%;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.indicator-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.indicator-sidebar li {
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.indicator-sidebar li:hover {
+    background-color: #e0e7ef;
+}
+
+.indicator-sidebar li.active {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+.indicator-content {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.indicator-panel {
+    display: none;
+}
+.indicator-panel.active-panel {
+    display: block;
+}
+
+.cominfo-layout {
+    display: flex;
+    gap: 24px;
+}
+
+.cominfo-sidebar {
+    width: 15%;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.cominfo-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cominfo-sidebar li {
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cominfo-sidebar li:hover {
+    background-color: #e0e7ef;
+}
+
+.cominfo-sidebar li.active {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+.cominfo-content {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.cominfo-panel {
+    display: none;
+}
+.cominfo-panel.active-panel {
+    display: block;
+}
+
+/* 通用設定 */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: #f4f6fa;
+  color: #2c3e50;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* 標題與輸入區 */
+header h2 {
+  font-size: 2rem;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  border-bottom: 1px solid #dcdfe6;
+  background-color: #ffffff;
+}
+
+.search-left h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #2c3e50;
+}
+
+.search-right {
+  display: flex;
+  align-items: center;
+}
+
+.search-right input[type="text"] {
+  height: 36px;
+  padding: 0 10px;
+  font-size: 14px;
+  border: 1px solid #b0bec5;
+  border-radius: 4px;
+  outline: none;
+}
+
+.search-right button {
+  height: 36px;
+  margin-left: 8px;
+  padding: 0 16px;
+  font-size: 14px;
+  background-color: #2c7be5;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-right button:hover {
+  background-color: #1a65d6;
+}
+
+
+/* 表格區 */
+.analysis-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.analysis-table th, .analysis-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.analysis-table th {
+  background-color: #eaf0fa;
+  color: #2c3e50;
+}
+
+.analysis-table tr:hover {
+  background-color: #f2f6ff;
+}
+
+/* 等級燈號 */
+.indicator-light {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.light-green {
+  background-color: #2ecc71;
+}
+.light-yellow {
+  background-color: #f1c40f;
+}
+.light-red {
+  background-color: #e74c3c;
+}
+
+/* 圖表區 */
+.chart-section {
+  padding: 24px;
+  background-color: #f5f7fa;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+}
+.chart-title {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #1f2d3d;
+  font-weight: bold;
+}
+
+.chart-wrapper {
+  background-color: white;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  padding: 0;
+  overflow: hidden;
+  height: 450px; /* 根據你的圖表高度可微調 */
+}
+
+.chart-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* AI 建議區 */
+.ai-suggestion {
+  margin-top: 40px;
+  background-color: #fff;
+  padding: 20px 25px;
+  border-left: 6px solid #3366cc;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.chart-section h2 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+#advice-block {
+  margin-top: 10px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* 匯出按鈕 */
+.export-btn {
+  display: block;
+  width: min(360px, 92%);     /* 大按鈕，但小螢幕不爆版 */
+  margin: 18px auto 0;        /* 和 AI 建議區塊貼近 */
+  padding: 16px 28px;         /* 變大一點 */
+  font-size: 18px;            /* 字大 */
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #2b80ff, #4ab4ff);
+  color: #fff;
+  border: none;
+  border-radius: 12px;        /* 圓角更柔和 */
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  box-shadow: 0 6px 16px rgba(42, 128, 255, .25);
+}
+
+.export-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(42, 128, 255, .32);
+}
+
+.export-btn:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow: 0 4px 12px rgba(42, 128, 255, .22);
+}
+
+.chart-placeholder iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 500px;
+  border: none;
+  overflow: hidden;
+}
+
+.section-title {
+  font-size: 20px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 4px;
+}
+
+.indicator-group {
+  margin-bottom: 32px;
+  /* padding: 16px 24px; */
+  background-color: #ffffff;
+  border: 1px solid #dcdfe6;
+  border-radius: 0 0 8px 8px;;
+}
+
+.group-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2d3d;
+  margin-bottom: 12px;
+}
+
+/* 整張表格設定 */
+.indicator-table {
+width: 100%;
+border-collapse: collapse;
+font-size: 15px;
+}
+
+
+.indicator-table td:first-child,
+.indicator-table th:first-child {
+width: 180px;
+word-wrap: break-word;
+white-space: normal;
+}
+
+
+.indicator-table th,
+.indicator-table td {
+padding: 12px 10px;
+text-align: center;
+border-bottom: 1px solid #e0e6ed;
+}
+
+
+.indicator-table th {
+background-color: #f2f5f8;
+color: #2c3e50;
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dot.green { background-color: #4caf50; }
+.dot.yellow { background-color: #ffcc00; }
+.dot.red { background-color: #f44336; }
+
+.trend-btn {
+  padding: 4px 8px;
+  background-color: #fff;
+  border: 1px solid #b0bec5;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.trend-btn:hover {
+  background-color: #f2f2f2;
+}
+
+.category-tabs {
+display: flex;
+justify-content: space-between;
+margin-bottom: 0;
+border: 1px solid #b0bec5;
+border-bottom: none;
+border-radius: 6px 6px 0 0;
+overflow: hidden;
+}
+
+/* ✅ 每個按鈕等寬且無縫連接 */
+.category-tabs .tab-button {
+flex: 1;
+text-align: center;
+padding: 12px 0;
+border: none;
+border-right: 1px solid #b0bec5;
+background-color: #ffffff;
+font-size: 15px;
+color: #34495e;
+cursor: pointer;
+transition: background-color 0.2s, color 0.2s;
+}
+
+
+/* 最後一個按鈕不需要右邊框 */
+.category-tabs .tab-button:last-child {
+border-right: none;
+}
+
+
+/* ✅ active 狀態按鈕與表格視覺接合 */
+.category-tabs .tab-button.active {
+background-color: #f2f5f8;
+color: #2c7be5;
+font-weight: bold;
+}
+
+
+.category-tabs .tab-button:hover {
+background-color: #e3f2fd;
+color: #2c7be5;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  background-color: #ffffff;
+  border: 1px solid #b0bec5;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  color: #34495e;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tab-button.active {
+  background-color: #2c7be5;
+  color: #ffffff;
+  border-color: #2c7be5;
+}
+
+.tab-button:hover {
+  background-color: #e3f2fd;
+  border-color: #64b5f6;
+}
+
+.hidden {
+  display: none;
+}
+
+.indicator-section {
+width: 100%;
+margin: 0 auto;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+.ai-advice-block {
+  background: #f9f9ff;
+  border-left: 5px solid #5a8dee;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.ai-advice-block h3 {
+  margin: 0 0 6px;
+  color: #444;
+}
+.ai-advice-block p {
+  margin: 0;
+  color: #333;
+}

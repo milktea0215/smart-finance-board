@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司財務健康狀況分析</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <section class="switch-buttons">
+        <button class="switch-btn active" data-target="section-about">網站說明</button>
+        <button class="switch-btn" data-target="section-financial">財報分析</button>
+        <button class="switch-btn" data-target="section-industry">行業比較</button>
+    </section><!-- 頁面最上方 Hero 區塊 -->
+    <section class="hero-banner">
+        <div class="hero-overlay">
+            <h1>智慧財報分析儀表板</h1>
+        </div>
+    </section>
+
+    <!-- 下方介紹內容可接續 -->
+    <section id="section-about" class="content-section show"> <!-- 網站說明 -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h3>讓財務數字變得簡單易懂</h3>
+                    <p>
+                        本網站整合企業財報資料，透過財務比率分析與視覺化儀表圖，快速呈現公司財務結構、償債能力、營運效率與獲利能力，協助使用者掌握企業體質。
+                    </p>
+                    <button onclick="scrollToForm()">開始分析</button>
+                </div>
+                <div class="hero-image">
+                    <img src="imgs/resaults.png" alt="儀表板預覽圖">
+                </div>
+            </div>
+        </section>
+        <!-- 儀表板單指標圖說明 -->
+        <section class="explanation-section">
+            <h2 class="explanation-title">📈 指標儀表板說明</h2>
+            <div class="explanation-block">
+                <img src="imgs/results.png" alt="三指標儀表板圖"
+                    style="width:100%; max-width:900px; display:block; margin: 0 auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+                <p><strong>1️⃣ 單指標視覺化：</strong>儀表板用紅黃綠三段式呈現指標位置，幫助快速判斷財務表現。</p>
+                <p><strong>2️⃣ 依照不同產業設計：</strong>每個產業的理想區間不同，顏色區間會自動依據行業特性調整。</p>
+                <p><strong>3️⃣ 搭配說明文字：</strong>點擊下方每個指標可閱讀其計算方式與投資觀點。</p>
+            </div>
+        </section>
+
+        <!-- 綜合雷達圖或條形圖說明 -->
+        <section class="explanation-section">
+            <h2 class="explanation-title">📊 綜合財務得分圖說明</h2>
+            <div class="explanation-block">
+                <iframe src="charts/chart_interactive.html" width="100%" height="600" frameborder="0"></iframe>
+                <p><strong>1️⃣ 各指標得分：</strong>每項指標都會被轉換為 0～100 分，愈高表示該項愈理想。</p>
+                <p><strong>2️⃣ 總覽公司健康度：</strong>圖形面積與分布可視為公司整體財務健康的雷達圖。</p>
+                <p><strong>3️⃣ 與他人比較：</strong>可對比產業平均或其他競爭對手，一目了然自身優劣勢。</p>
+            </div>
+        </section>
+    </section>
+
+    <section id="section-financial" class="content-section">
+        <header>
+            <div class="search-bar">
+                <div class="search-left">
+                    <h2 id="stockName"> </h2>
+                </div>
+                <div class="search-right">
+                    <input type="text" id="stockInput" placeholder="輸入股票代碼或公司名稱">
+                    <button onclick="searchStock()">搜尋</button>
+                    <!-- 🆕 年份選擇器：預設「最新年度」，查到資料後由 JS 自動填入 -->
+                    <div class="year-filter">
+                        <label for="yearSelect" style="margin-left:8px;">選擇年份：</label>
+                        <select id="yearSelect">
+                            <option value="">選擇年度</option>
+                     </select>
+                    </div>
+
+                </div>
+            </div>
+        </header>
+
+        <div class="indicator-section"> <!-- ✅ 改這裡 -->
+            <div class="indicator-content">
+                <div class="category-tabs">
+                    <button class="tab-button active" data-target="finance">財務結構</button>
+                    <button class="tab-button" data-target="debt">償債能力</button>
+                    <button class="tab-button" data-target="operation">經營績效</button>
+                    <button class="tab-button" data-target="profit">獲利能力</button>
+                    <button class="tab-button" data-target="cash">現金流量</button>
+                    <button class="tab-button" data-target="leverage">槓桿度</button>
+                </div>
+                <div class="indicator-group" id="finance"> <!-- ✅ 這裡才保留 -->
+                    <table class="indicator-table">
+                        <thead>
+                            <tr>
+                                <th>指標名稱</th>
+                                <th>此公司數值</th>
+                                <th>等級判斷</th>
+                                <th>同產業平均</th>
+                                <th>趨勢圖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>負債比率</td>
+                                <td>42.3%</td>
+                                <td><span class="dot yellow"></span></td>
+                                <td>39.1%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>產權比率</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <!-- 可再加入其他 row -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="indicator-group hidden" id="debt">
+                    <table class="indicator-table">
+                        <thead>
+                            <tr>
+                                <th>指標名稱</th>
+                                <th>此公司數值</th>
+                                <th>等級判斷</th>
+                                <th>同產業平均</th>
+                                <th>趨勢圖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>流動比率</td>
+                                <td>42.3%</td>
+                                <td><span class="dot yellow"></span></td>
+                                <td>39.1%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>速動比率</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>利息保障倍率</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <!-- 可再加入其他 row -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="indicator-group hidden" id="operation">
+                    <table class="indicator-table">
+                        <thead>
+                            <tr>
+                                <th>指標名稱</th>
+                                <th>此公司數值</th>
+                                <th>等級判斷</th>
+                                <th>同產業平均</th>
+                                <th>趨勢圖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>應收帳款週轉率比率</td>
+                                <td>42.3%</td>
+                                <td><span class="dot yellow"></span></td>
+                                <td>39.1%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>存貨周轉率</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>不動產、廠房及設備週轉率</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>總資產週轉率</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <!-- 可再加入其他 row -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="indicator-group hidden" id="profit">
+                    <table class="indicator-table">
+                        <thead>
+                            <tr>
+                                <th>指標名稱</th>
+                                <th>此公司數值</th>
+                                <th>等級判斷</th>
+                                <th>同產業平均</th>
+                                <th>趨勢圖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>資產報酬率</td>
+                                <td>42.3%</td>
+                                <td><span class="dot yellow"></span></td>
+                                <td>39.1%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>純益率
+                                </td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>權益報酬率
+
+                                </td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>每股盈餘
+
+                                </td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <!-- 可再加入其他 row -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="indicator-group hidden" id="cash">
+                    <table class="indicator-table">
+                        <thead>
+                            <tr>
+                                <th>指標名稱</th>
+                                <th>此公司數值</th>
+                                <th>等級判斷</th>
+                                <th>同產業平均</th>
+                                <th>趨勢圖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>現金流量比率
+                                </td>
+                                <td>42.3%</td>
+                                <td><span class="dot yellow"></span></td>
+                                <td>39.1%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>現金再投資比率
+                                </td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>現金流量允當比率</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <!-- 可再加入其他 row -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="indicator-group hidden" id="leverage">
+                    <table class="indicator-table">
+                        <thead>
+                            <tr>
+                                <th>指標名稱</th>
+                                <th>此公司數值</th>
+                                <th>等級判斷</th>
+                                <th>同產業平均</th>
+                                <th>趨勢圖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>營運槓桿度
+                                </td>
+                                <td>42.3%</td>
+                                <td><span class="dot yellow"></span></td>
+                                <td>39.1%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <tr>
+                                <td>財務槓桿度</td>
+                                <td>57.7%</td>
+                                <td><span class="dot green"></span></td>
+                                <td>60.9%</td>
+                                <td><button class="trend-btn">查看趨勢</button></td>
+                            </tr>
+                            <!-- 可再加入其他 row -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h2 class="chart-title">折線圖顯示區</h2>
+            <div class="chart-wrapper">
+
+                <canvas id="trendChart"></canvas>
+
+
+            </div>
+        </div>
+
+        <section class="ai-suggestion">
+            <h2>AI 建議</h2>
+            <div id="aiAdvice" class="advice-block">
+                <!-- 可直接插入純文字建議 -->
+                請輸入股票代碼後顯示建議...
+            </div>
+            <button id="exportReport" class="export-btn">📤 匯出報告</button>
+        </section>
+
+        
+        </div>
+
+    </section>
+    <section id="section-industry" class="content-section"> <!-- 行業比較 -->
+        <div>
+            <h2>行業比較分析</h2>
+            <p>這裡可以放產業平均數據、對比圖表等內容。</p>
+        </div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
