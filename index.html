@@ -21,44 +21,106 @@
     </section>
 
     <!-- 下方介紹內容可接續 -->
-    <section id="section-about" class="content-section show"> <!-- 網站說明 -->
-        <section class="hero-section">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h3>讓財務數字變得簡單易懂</h3>
-                    <p>
-                        本網站整合企業財報資料，透過財務比率分析與視覺化儀表圖，快速呈現公司財務結構、償債能力、營運效率與獲利能力，協助使用者掌握企業體質。
-                    </p>
-                    <button onclick="scrollToForm()">開始分析</button>
-                </div>
-                <div class="hero-image">
-                    <img src="resaults.png" alt="儀表板預覽圖">
-                </div>
-            </div>
-        </section>
-        <!-- 儀表板單指標圖說明 -->
-        <section class="explanation-section">
-            <h2 class="explanation-title">📈 指標儀表板說明</h2>
-            <div class="explanation-block">
-                <img src="results.png" alt="三指標儀表板圖"
-                    style="width:100%; max-width:900px; display:block; margin: 0 auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
-                <p><strong>1️⃣ 單指標視覺化：</strong>儀表板用紅黃綠三段式呈現指標位置，幫助快速判斷財務表現。</p>
-                <p><strong>2️⃣ 依照不同產業設計：</strong>每個產業的理想區間不同，顏色區間會自動依據行業特性調整。</p>
-                <p><strong>3️⃣ 搭配說明文字：</strong>點擊下方每個指標可閱讀其計算方式與投資觀點。</p>
-            </div>
-        </section>
+    <!-- ================== 網站說明（新版） ================== -->
+    <div id="section-about" class="content-section show">
+        <h2 class="guide-title">📘 本網站使用指南</h2>
 
-        <!-- 綜合雷達圖或條形圖說明 -->
-        <section class="explanation-section">
-            <h2 class="explanation-title">📊 綜合財務得分圖說明</h2>
-            <div class="explanation-block">
-                <iframe src="chart_interactive.html" width="100%" height="600" frameborder="0"></iframe>
-                <p><strong>1️⃣ 各指標得分：</strong>每項指標都會被轉換為 0～100 分，愈高表示該項愈理想。</p>
-                <p><strong>2️⃣ 總覽公司健康度：</strong>圖形面積與分布可視為公司整體財務健康的雷達圖。</p>
-                <p><strong>3️⃣ 與他人比較：</strong>可對比產業平均或其他競爭對手，一目了然自身優劣勢。</p>
+    <!-- 4 格功能卡片 -->
+        <div class="feature-grid">
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>財務指標總覽（紅綠燈）</h3>
+                <p>
+                    系統自動載入公司財報，並以🟢良好🟡普通🔴需注意，作為燈號顯示指標狀態，
+                    同時提供與「產業平均」的比較效果，方便快速了解財務健康度。
+                </p>
             </div>
-        </section>
-    </section>
+
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>歷史趨勢折線圖</h3>
+                <p>
+                    所有財務指標皆可查看多年走勢，包含：
+                    <br>公司趨勢 vs 產業年度平均 vs 全期平均。
+                    使用 Chart.js 動態呈現更直覺的變化分析。
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI 財務分析（含舉例）</h3>
+                <p>
+                    AI 會針對每年財報生成評估分析，並新增
+                    <strong>具體改善方法舉例</strong>，
+                    幫助使用者理解問題並採取實際行動策略。
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>Word 報告匯出</h3>
+                <p>
+                    一鍵匯出完整格式化報告，內容包含：
+                    <br>財務指標表格、折線圖、年度 AI 建議、
+                    <br>以及五年整體財務分析。
+                </p>
+            </div>
+            <!-- 健康財務示意圖卡片 -->
+            <div class="feature-card">
+                <img src="health.jpg"  class="feature-image">               
+            </div>
+
+            <div class="feature-card">
+                <img src="指標.jpg" class="feature-image">               
+            </div>
+        </div>
+
+    <!-- 教學指南 -->
+        <h2 class="guide-subtitle">🧭 如何使用本工具？（六大步驟）</h2>
+
+        <div class="steps-container">
+
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h4>輸入公司代碼或名稱</h4>
+                <p>例如輸入「2330」或「台積電」，系統會自動載入財報與產業平均資料。</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h4>選擇財務分類</h4>
+                <p>如財務結構／償債能力／營運能力／獲利能力／現金流量／槓桿度。</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h4>切換年度</h4>
+                <p>可查看不同年度的財報數值與燈號判斷（與產業平均比較）。</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h4>查看指標趨勢圖</h4>
+                <p>點選「查看趨勢」即可顯示多年的折線圖，直觀分析變化。</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">5</div>
+                <h4>查看 AI 財務分析建議</h4>
+                <p>AI 會針對 2015–2024 每一年提供分析，並附上具體改善舉例。</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">6</div>
+                <h4>匯出 Word 報告</h4>
+                <p>自動生成完整報告，包含表格、折線圖、年度與五年 AI 建議。</p>
+            </div>
+
+        </div>
+
+    </div>
+
 
     <section id="section-financial" class="content-section">
         <header>
@@ -356,6 +418,5 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="main.js"></script>
 </body>
-
 
 </html>
