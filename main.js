@@ -8,6 +8,16 @@ let currentAverageOverall = {}; // 🆕 全期平均資料
 // ===== 匯出報告需要的額外全域 =====
 let AI_CACHE = { annual: {}, summary_5yr: "" }; // 儲存 AI 結果
 
+// ====================== 行業比較用全域變數 ======================
+let INDUSTRY_COMPARE_STATE = {
+  industry1: null,
+  industry2: null,
+  year: null,
+  lastIndicator: null,
+};
+
+let industryTrendChart = null; // 行業比較用的折線圖實例
+
 
 // 頁籤切換（頁面上方三個區塊）
 const buttons = document.querySelectorAll(".switch-btn");
@@ -427,6 +437,319 @@ function renderTrendChart(indicatorName) {
   if (chartSection) chartSection.scrollIntoView({ behavior: "smooth" });
 }
 
+// ====================== 行業比較：載入行業清單 ======================
+function loadIndustryList() {
+  fetch(`${API_BASE}/industry_list`)
+    .then(res => res.json())
+    .then(data => {
+      const industries = data.industries || [];
+      const sel1 = document.getElementById("industrySelect1");
+      const sel2 = document.getElementById("industrySelect2");
+      if (!sel1 || !sel2) return;
+
+      // 保留第一個「請選擇」，清掉後面
+      sel1.length = 1;
+      sel2.length = 1;
+
+      industries.forEach(name => {
+        const opt1 = document.createElement("option");
+        opt1.value = name;
+        opt1.textContent = name;
+        sel1.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = name;
+        opt2.textContent = name;
+        sel2.appendChild(opt2);
+      });
+    })
+    .catch(err => {
+      console.error("載入行業清單失敗", err);
+    });
+}
+
+// ====================== 行業比較：按下「開始行業比較」 ======================
+function setupIndustryCompare() {
+  const btn = document.getElementById("btnStartIndustryCompare");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const industry1 = document.getElementById("industrySelect1").value;
+    const industry2 = document.getElementById("industrySelect2").value;
+    const year = document.getElementById("industryYearSelect").value;
+
+    if (!industry1 || !industry2) {
+      alert("請選擇兩個行業");
+      return;
+    }
+    if (industry1 === industry2) {
+      alert("請選擇不同的兩個行業做比較");
+      return;
+    }
+    if (!year) {
+      alert("請選擇年份");
+      return;
+    }
+
+    INDUSTRY_COMPARE_STATE.industry1 = industry1;
+    INDUSTRY_COMPARE_STATE.industry2 = industry2;
+    INDUSTRY_COMPARE_STATE.year = year;
+
+    fetch(`${API_BASE}/industry_compare?industry1=${encodeURIComponent(industry1)}&industry2=${encodeURIComponent(industry2)}&year=${encodeURIComponent(year)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+        renderIndustryCompareTable(data);
+        setupIndustryTabs();  // 初始化分類 tab
+
+        // 預設顯示第一個指標的趨勢圖
+        if (data.indicators && data.indicators.length > 0) {
+          showIndustryTrend(data.indicators[0].name);
+        }
+      })
+      .catch(err => {
+        console.error("行業比較失敗", err);
+        alert("行業比較時發生錯誤");
+      });
+  });
+}
+
+// 行業比較的指標分類（跟財報分析分類一致）
+const INDUSTRY_INDICATOR_BUCKETS = {
+  finance: ["負債占資產比率", "長期資金占不動產、廠房及設備比率"],
+  debt: ["流動比率", "速動比率", "利息保障倍數"],
+  operation: ["應收帳款週轉率", "不動產、廠房及設備週轉率", "存貨週轉率", "總資產週轉率"],
+  profit: ["資產報酬率", "純益率", "權益報酬率", "每股盈餘"],
+  cash: ["現金流量比率", "現金再投資比率", "現金流量允當比率 (%)"],
+  leverage: ["營運槓桿度", "財務槓桿度"]
+};
+
+function renderIndustryCompareTable(data) {
+  const resultDiv = document.getElementById("industryCompareResult");
+  const titleEl = document.getElementById("industryCompareTitle");
+
+  if (!resultDiv) return;
+
+  // 標題
+  titleEl.textContent = `${data.year} 年「${data.industry1}」與「${data.industry2}」行業平均值比較`;
+
+  // 把行業比較區裡所有表格的第 2、3 欄表頭都改成行業名稱
+  const headerRows = document.querySelectorAll("#industryCompareResult table thead tr");
+  headerRows.forEach(row => {
+    const ths = row.querySelectorAll("th");
+    // th[0] = 指標名稱, th[1] = 行業一, th[2] = 行業一等級,
+    // th[3] = 行業二, th[4] = 行業二等級, th[5] = 趨勢圖
+    if (ths.length >= 4) {
+      ths[1].textContent = data.industry1;
+      ths[3].textContent = data.industry2;
+    }
+  });
+
+
+  // 先清空六個分類的 tbody
+  Object.keys(INDUSTRY_INDICATOR_BUCKETS).forEach(key => {
+    const tbody = document.querySelector(`#industryTable-${key} tbody`);
+    if (tbody) tbody.innerHTML = "";
+  });
+
+  // 依照指標名稱把資料塞進對應分類
+  (data.indicators || []).forEach(ind => {
+    // 找這個指標屬於哪一個分類
+    let bucketKey = null;
+    for (const [key, list] of Object.entries(INDUSTRY_INDICATOR_BUCKETS)) {
+      if (list.includes(ind.name)) {
+        bucketKey = key;
+        break;
+      }
+    }
+    if (!bucketKey) bucketKey = "finance";
+
+    const tbody = document.querySelector(`#industryTable-${bucketKey} tbody`);
+    if (!tbody) return;
+
+    const tr = document.createElement("tr");
+
+    // 指標名稱
+    const tdName = document.createElement("td");
+    tdName.textContent = ind.name;
+
+    // 行業一數值
+    const tdVal1 = document.createElement("td");
+    tdVal1.textContent = ind.industry1 == null ? "-" : toDisplay(ind.industry1);
+
+    // 行業一等級判斷（紅綠燈）
+    const tdLight1 = document.createElement("td");
+    const span1 = document.createElement("span");
+    span1.classList.add("dot", getLightClass(ind.industry1, ind.name, ind.industry2));
+    tdLight1.appendChild(span1);
+
+    // 行業二數值
+    const tdVal2 = document.createElement("td");
+    tdVal2.textContent = ind.industry2 == null ? "-" : toDisplay(ind.industry2);
+
+    // 行業二等級判斷（紅綠燈）
+    const tdLight2 = document.createElement("td");
+    const span2 = document.createElement("span");
+    span2.classList.add("dot", getLightClass(ind.industry2, ind.name, ind.industry1));
+    tdLight2.appendChild(span2);
+
+    // 查看趨勢按鈕
+    const tdAction = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.textContent = "查看趨勢";
+    btn.addEventListener("click", () => {
+      showIndustryTrend(ind.name);
+    });
+    tdAction.appendChild(btn);
+
+    // 欄位順序：指標名稱｜行業一｜行業一燈號｜行業二｜行業二燈號｜趨勢圖
+    tr.appendChild(tdName);
+    tr.appendChild(tdVal1);
+    tr.appendChild(tdLight1);
+    tr.appendChild(tdVal2);
+    tr.appendChild(tdLight2);
+    tr.appendChild(tdAction);
+
+    tbody.appendChild(tr);
+  });
+
+
+  // 顯示區塊
+  resultDiv.style.display = "block";
+
+  // 預設顯示「財務結構」分頁
+  const groups = document.querySelectorAll(".industry-group");
+  groups.forEach(g => g.classList.add("hidden"));
+  const firstGroup = document.getElementById("industryGroup-finance");
+  if (firstGroup) firstGroup.classList.remove("hidden");
+
+  const tabs = document.querySelectorAll(".industry-tab-button");
+  tabs.forEach(t => t.classList.remove("active"));
+  if (tabs.length > 0) tabs[0].classList.add("active");
+}
+
+// 行業比較：分類標籤切換
+// 行業比較：分類標籤切換
+function setupIndustryTabs() {
+  const tabs = document.querySelectorAll(".industry-tab-button");
+  const groups = document.querySelectorAll(".industry-group");
+  if (!tabs.length || !groups.length) return;
+
+  tabs.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-target");
+
+      tabs.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      groups.forEach(g => {
+        if (g.id === targetId) {
+          g.classList.remove("hidden");
+        } else {
+          g.classList.add("hidden");
+        }
+      });
+    });
+  });
+}
+
+
+// ====================== 行業比較：呼叫後端取得趨勢資料 ======================
+function showIndustryTrend(indicatorName) {
+  const { industry1, industry2 } = INDUSTRY_COMPARE_STATE;
+  if (!industry1 || !industry2) return;
+
+  INDUSTRY_COMPARE_STATE.lastIndicator = indicatorName;
+
+  fetch(`${API_BASE}/industry_trend?industry1=${encodeURIComponent(industry1)}&industry2=${encodeURIComponent(industry2)}&indicator=${encodeURIComponent(indicatorName)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      renderIndustryTrendChart(data);
+    })
+    .catch(err => {
+      console.error("取得行業趨勢失敗", err);
+      alert("載入行業趨勢時發生錯誤");
+    });
+}
+
+// ====================== 行業比較：畫折線圖 ======================
+function renderIndustryTrendChart(data) {
+  const area = document.getElementById("industryTrendArea");
+  const titleEl = document.getElementById("industryTrendTitle");
+  const canvas = document.getElementById("industryTrendChart");
+  if (!area || !titleEl || !canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const years = data.industry1.years;
+  const values1 = data.industry1.values;
+  const values2 = data.industry2.values;
+
+  titleEl.textContent = `${data.indicator} – ${data.industry1.name} vs ${data.industry2.name} 行業趨勢比較`;
+
+  if (industryTrendChart) {
+    industryTrendChart.destroy();
+  }
+
+  industryTrendChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: data.industry1.name,
+          data: values1,
+          fill: false,
+          tension: 0.1
+        },
+        {
+          label: data.industry2.name,
+          data: values2,
+          fill: false,
+          tension: 0.1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: { position: "top" },
+        tooltip: { enabled: true }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "年份"
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: data.indicator
+          },
+          beginAtZero: false
+        }
+      }
+    }
+  });
+
+  area.style.display = "block";
+  // 👉 按下「查看趨勢」後，自動捲動到行業折線圖
+  area.scrollIntoView({ behavior: "smooth" });
+}
+
+
 // ====================== 🧠 多年度 AI 建議（2015–2024 + 五年整體分析） ======================
 async function renderAllYearAIAdvice(allRows) {
   const box = document.getElementById("aiAdvice");
@@ -569,7 +892,7 @@ document.getElementById("exportReport").addEventListener("click", async () => {
 
   // 1️⃣ 收集指標摘要
   const indicators_summary = [];
-  document.querySelectorAll(".indicator-table tbody tr").forEach(tr => {
+  document.querySelectorAll("#section-financial .indicator-table tbody tr").forEach(tr => {
     const tds = tr.querySelectorAll("td");
     if (tds.length < 4) return;
     const name = tds[0].textContent.trim();
@@ -627,5 +950,8 @@ document.getElementById("exportReport").addEventListener("click", async () => {
   }
 });
 
+// ====================== 初始化行業比較功能 ======================
+loadIndustryList();
+setupIndustryCompare();
 
 
