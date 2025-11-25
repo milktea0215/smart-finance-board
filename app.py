@@ -3,6 +3,7 @@ from flask_cors import CORS
 import pandas as pd
 import traceback
 import os
+import glob
 # === OpenAI 客製化：讀取 API Key 並建立 client ===
 from openai import OpenAI
 from dotenv import load_dotenv  # ✅ 若有 .env 可自動讀取
@@ -26,6 +27,30 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder=BASE_DIR, static_url_path='')
 CORS(app)
 
+# ===== 行業比較用：高科技產業指標輸出資料夾 & 指標欄位 =====
+INDICATOR_OUTPUT_DIR = os.path.join(BASE_DIR, "高科技產業指標輸出")
+
+INDICATOR_COLUMNS = [
+    '負債占資產比率',
+    '長期資金占不動產、廠房及設備比率',
+    '流動比率',
+    '速動比率',
+    '利息保障倍數',
+    '應收帳款週轉率',
+    '不動產、廠房及設備週轉率',
+    '存貨週轉率',
+    '總資產週轉率',
+    '資產報酬率',
+    '純益率',
+    '權益報酬率',
+    '每股盈餘',
+    '現金流量比率',
+    '現金再投資比率',
+    '現金流量允當比率 (%)',
+    '營運槓桿度',
+    '財務槓桿度',
+]
+
 
 EXCEL_PATH = os.path.join(BASE_DIR, "財務指標輸出.xlsx")
 
@@ -48,6 +73,48 @@ except Exception as e:
     print("❌ 載入 Excel 失敗：", e)
     traceback.print_exc()
     df = pd.DataFrame()
+
+# ===== 行業比較用共用工具函式 =====
+
+def get_industry_file_path(industry_name):
+    """
+    將行業名稱轉成對應的指標輸出檔路徑
+    例：industry_name = '半導體' -> 高科技產業指標輸出/半導體指標輸出.xlsx
+    """
+    filename = f"{industry_name}指標輸出.xlsx"
+    path = os.path.join(INDICATOR_OUTPUT_DIR, filename)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"找不到檔案：{path}")
+    return path
+
+
+def load_industry_df(industry_name):
+    """讀取某行業的指標輸出檔"""
+    path = get_industry_file_path(industry_name)
+    df_ind = pd.read_excel(path)
+    return df_ind
+
+
+def get_year_average_row(df_ind, year):
+    """
+    取得某一年的「年度平均值」列。
+    依 1.py 的設計：公司欄 = '2015 平均值'、'2016 平均值'...
+    年份欄 = 2015、2016 ...
+    """
+    mask = (df_ind['公司'] == f"{year} 平均值") & (df_ind['年份'] == year)
+    rows = df_ind[mask]
+    if rows.empty:
+        return None
+    return rows.iloc[0]
+
+
+def get_all_yearly_average_rows(df_ind):
+    """
+    取得所有年度平均值的列（排除最底下那個「平均值」總平均）。
+    """
+    mask = df_ind['公司'].astype(str).str.endswith("平均值") & (df_ind['公司'] != "平均值")
+    return df_ind[mask].copy()
+
 
 @app.route("/")
 def home():
@@ -262,6 +329,164 @@ def list_companies():
         print("❌ /list_companies 錯誤：", e)
         traceback.print_exc()
         return jsonify({"companies": []}), 500
+
+# ====================== 📊 行業比較 API ======================
+
+@app.route("/industry_list", methods=["GET"])
+def industry_list():
+    """
+    掃描高科技產業指標輸出資料夾，列出所有可用行業名稱。
+    例如：半導體指標輸出.xlsx -> 半導體
+    """
+    if not os.path.exists(INDICATOR_OUTPUT_DIR):
+        return jsonify({"industries": []})
+
+    pattern = os.path.join(INDICATOR_OUTPUT_DIR, "*指標輸出.xlsx")
+    files = glob.glob(pattern)
+
+    industries = []
+    for f in files:
+        base = os.path.basename(f)
+        # 去掉「指標輸出.xlsx」
+        name = base.replace("指標輸出.xlsx", "")
+        industries.append(name)
+
+    industries = sorted(set(industries))
+    return jsonify({"industries": industries})
+
+
+@app.route("/industry_compare", methods=["GET"])
+def industry_compare():
+    """
+    取得某年份兩個行業的各項「年度平均值」指標，用來顯示上方表格。
+    參數：
+      industry1, industry2, year
+    """
+    industry1 = request.args.get("industry1")
+    industry2 = request.args.get("industry2")
+    year_str = request.args.get("year")
+
+    if not industry1 or not industry2 or not year_str:
+        return jsonify({"error": "缺少參數"}), 400
+
+    try:
+        year = int(year_str)
+    except ValueError:
+        return jsonify({"error": "年份格式錯誤"}), 400
+
+    try:
+        df1 = load_industry_df(industry1)
+        df2 = load_industry_df(industry2)
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
+
+    row1 = get_year_average_row(df1, year)
+    row2 = get_year_average_row(df2, year)
+
+    if row1 is None or row2 is None:
+        return jsonify({"error": f"{year} 年其中一個行業沒有年度平均值資料"}), 404
+
+    indicators = []
+    for col in INDICATOR_COLUMNS:
+        val1 = row1.get(col, None)
+        val2 = row2.get(col, None)
+
+        # 轉成 float 或 None
+        try:
+            v1 = None if pd.isna(val1) else float(val1)
+        except Exception:
+            v1 = None
+        try:
+            v2 = None if pd.isna(val2) else float(val2)
+        except Exception:
+            v2 = None
+
+        indicators.append({
+            "name": col,
+            "industry1": v1,
+            "industry2": v2,
+        })
+
+    return jsonify({
+        "year": year,
+        "industry1": industry1,
+        "industry2": industry2,
+        "indicators": indicators,
+    })
+
+
+@app.route("/industry_trend", methods=["GET"])
+def industry_trend():
+    """
+    取得兩個行業某一指標的歷年「年度平均值」趨勢，
+    用來畫下方折線圖。
+    參數：
+      industry1, industry2, indicator
+    """
+    industry1 = request.args.get("industry1")
+    industry2 = request.args.get("industry2")
+    indicator = request.args.get("indicator")
+
+    if not industry1 or not industry2 or not indicator:
+        return jsonify({"error": "缺少參數"}), 400
+
+    if indicator not in INDICATOR_COLUMNS:
+        return jsonify({"error": f"未知指標: {indicator}"}), 400
+
+    try:
+        df1 = load_industry_df(industry1)
+        df2 = load_industry_df(industry2)
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
+
+    avg1 = get_all_yearly_average_rows(df1)
+    avg2 = get_all_yearly_average_rows(df2)
+
+    # 年份交集，確保兩邊都有資料
+    years1 = set(avg1['年份'].dropna().astype(int).tolist())
+    years2 = set(avg2['年份'].dropna().astype(int).tolist())
+    years = sorted(list(years1 & years2))
+
+    years_labels = []
+    values1 = []
+    values2 = []
+
+    for y in years:
+        row1 = avg1[avg1['年份'] == y]
+        row2 = avg2[avg2['年份'] == y]
+        if row1.empty or row2.empty:
+            continue
+
+        v1 = row1.iloc[0].get(indicator, None)
+        v2 = row2.iloc[0].get(indicator, None)
+
+        try:
+            v1 = None if pd.isna(v1) else float(v1)
+        except Exception:
+            v1 = None
+        try:
+            v2 = None if pd.isna(v2) else float(v2)
+        except Exception:
+            v2 = None
+
+        years_labels.append(str(y))
+        values1.append(v1)
+        values2.append(v2)
+
+    return jsonify({
+        "indicator": indicator,
+        "industry1": {
+            "name": industry1,
+            "years": years_labels,
+            "values": values1,
+        },
+        "industry2": {
+            "name": industry2,
+            "years": years_labels,
+            "values": values2,
+        },
+    })
+
 
 # ====================== 📤 匯出報告：Word 專業版（含表格＋折線圖＋AI建議） ======================
 from datetime import datetime
