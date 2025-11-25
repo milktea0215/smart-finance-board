@@ -16,7 +16,7 @@
     </section><!-- 頁面最上方 Hero 區塊 -->
     <section class="hero-banner">
         <div class="hero-overlay">
-            <h1>智慧財報分析儀表板</h1>
+            <h1>智慧財務分析與決策系統</h1>
         </div>
     </section>
 
@@ -409,12 +409,182 @@
         </div>
 
     </section>
-    <section id="section-industry" class="content-section"> <!-- 行業比較 -->
-        <div>
-            <h2>行業比較分析</h2>
-            <p>這裡可以放產業平均數據、對比圖表等內容。</p>
+        <section id="section-industry" class="content-section"> <!-- 行業比較 -->
+        <h2>行業比較</h2>
+
+        <!-- 篩選條件區 -->
+        <div class="industry-filters">
+            <label>
+                行業一：
+                <select id="industrySelect1">
+                    <option value="">請選擇行業一</option>
+                    <!-- 會由 main.js 的 loadIndustryList() 動態塞選項 -->
+                </select>
+            </label>
+
+            <label>
+                行業二：
+                <select id="industrySelect2">
+                    <option value="">請選擇行業二</option>
+                </select>
+            </label>
+
+            <label>
+                年份：
+                <select id="industryYearSelect">
+                    <option value="">請選擇年份</option>
+                    <!-- 先用固定選項，也可以之後改動態 -->
+                    <option value="2015">2015</option>
+                    <option value="2016">2016</option>
+                    <option value="2017">2017</option>
+                    <option value="2018">2018</option>
+                    <option value="2019">2019</option>
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                </select>
+            </label>
+
+            <button id="btnStartIndustryCompare">開始行業比較</button>
+        </div>
+
+                <!-- 當年各項指標平均值比較表（分類顯示） -->
+        <div id="industryCompareResult" class="industry-compare-result" style="display:none;">
+            <h3 id="industryCompareTitle"></h3>
+
+            <!-- 分類標籤（行業比較專用） -->
+            <div class="category-tabs industry-tabs">
+                <button class="industry-tab-button active" data-target="industryGroup-finance">財務結構</button>
+                <button class="industry-tab-button" data-target="industryGroup-debt">償債能力</button>
+                <button class="industry-tab-button" data-target="industryGroup-operation">經營績效</button>
+                <button class="industry-tab-button" data-target="industryGroup-profit">獲利能力</button>
+                <button class="industry-tab-button" data-target="industryGroup-cash">現金流量</button>
+                <button class="industry-tab-button" data-target="industryGroup-leverage">槓桿度</button>
+            </div>
+
+            <!-- 財務結構 -->
+            <div class="industry-group" id="industryGroup-finance">
+                <table class="indicator-table" id="industryTable-finance">
+                    <thead>
+                        <tr>
+                            <th>指標名稱</th>
+                            <th id="thIndustry1">行業一</th>
+                            <th>行業一等級判斷</th>   <!-- 🆕 行業一燈號 -->
+                            <th id="thIndustry2">行業二</th>
+                            <th>行業二等級判斷</th>   <!-- 🆕 行業二燈號 -->
+                            <th>趨勢圖</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- JS 動態插入 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 償債能力 -->
+            <div class="industry-group hidden" id="industryGroup-debt">
+                <table class="indicator-table" id="industryTable-debt">
+                    <thead>
+                        <tr>
+                            <th>指標名稱</th>
+                            <th>行業一</th>
+                            <th>行業一等級判斷</th>
+                            <th>行業二</th>
+                            <th>行業二等級判斷</th>
+                            <th>趨勢圖</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- 經營績效 -->
+            <div class="industry-group hidden" id="industryGroup-operation">
+                <table class="indicator-table" id="industryTable-operation">
+                    <thead>
+                        <tr>
+                            <th>指標名稱</th>
+                            <th>行業一</th>
+                            <th>行業一等級判斷</th>
+                            <th>行業二</th>
+                            <th>行業二等級判斷</th>
+                            <th>趨勢圖</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- 獲利能力 -->
+            <div class="industry-group hidden" id="industryGroup-profit">
+                <table class="indicator-table" id="industryTable-profit">
+                    <thead>
+                        <tr>
+                            <th>指標名稱</th>
+                            <th>行業一</th>
+                            <th>行業一等級判斷</th>
+                            <th>行業二</th>
+                            <th>行業二等級判斷</th>
+                            <th>趨勢圖</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- 現金流量 -->
+            <div class="industry-group hidden" id="industryGroup-cash">
+                <table class="indicator-table" id="industryTable-cash">
+                    <thead>
+                        <tr>
+                            <th>指標名稱</th>
+                            <th>行業一</th>
+                            <th>行業一等級判斷</th>
+                            <th>行業二</th>
+                            <th>行業二等級判斷</th>
+                            <th>趨勢圖</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- 槓桿度 -->
+            <div class="industry-group hidden" id="industryGroup-leverage">
+                <table class="indicator-table" id="industryTable-leverage">
+                    <thead>
+                        <tr>
+                            <th>指標名稱</th>
+                            <th>行業一</th>
+                            <th>行業一等級判斷</th>
+                            <th>行業二</th>
+                            <th>行業二等級判斷</th>
+                            <th>趨勢圖</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- 趨勢折線圖 -->
+        <div id="industryTrendArea" style="display:none; margin-top:20px;">
+            <h3 id="industryTrendTitle">指標趨勢圖</h3>
+            <div class="chart-wrapper">
+                <canvas id="industryTrendChart"></canvas>
+            </div>
         </div>
     </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="main.js"></script>
 </body>
