@@ -581,8 +581,8 @@ background-color: #e3f2fd;
 color: #2c7be5;
 }
 
-.tab-button {
-  padding: 8px 16px;
+.tab-button,.industry-tab-button {
+  padding: 10px 110px;
   background-color: #ffffff;
   border: 1px solid #b0bec5;
   border-radius: 6px;
@@ -592,7 +592,7 @@ color: #2c7be5;
   transition: background-color 0.2s, color 0.2s;
 }
 
-.tab-button.active {
+.tab-button.active,.industry-tab-button.active  {
   background-color: #2c7be5;
   color: #ffffff;
   border-color: #2c7be5;
@@ -756,4 +756,24 @@ html {
     border-radius: 12px;
     margin-bottom: 12px;
     box-shadow: 0 0 8px rgba(0,0,0,0.08);
+}
+/* ===== 行業比較：上方篩選列放大 ===== */
+.industry-filters {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    /* 整列字體放大（大約 1.5 倍）*/
+    font-size: 1.2rem;
+}
+
+.industry-filters label {
+    font-weight: 600;          /* 字稍微粗一點 */
+}
+
+.industry-filters select,
+.industry-filters button {
+    font-size: 1.1rem;         /* 較大的字 */
+    padding: 8px 16px;         /* 比預設大一點的按鈕/下拉尺寸 */
 }
