@@ -316,6 +316,122 @@ def chatgpt_multi_advice():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+# ====================== 🧠 行業比較 AI 建議 ======================
+@app.route("/chatgpt_industry_advice", methods=["POST"])
+def chatgpt_industry_advice():
+    """
+    針對「兩個行業」與「2015–2024 趨勢」產生 AI 建議：
+    - 整體比較結論
+    - 六大財務面向趨勢比較
+    - 行業一優勢與風險
+    - 行業二優勢與風險
+    - 未來發展與決策方向
+    """
+    try:
+        payload = request.get_json(force=True) or {}
+        industry1 = (payload.get("industry1") or "").strip()
+        industry2 = (payload.get("industry2") or "").strip()
+        years_data = payload.get("years_data") or []
+
+        if client is None:
+            return jsonify({"error": "後端未設定 OPENAI_API_KEY"}), 500
+
+        if not industry1 or not industry2 or not years_data:
+            return jsonify({"error": "缺少 industry1、industry2 或 years_data"}), 400
+
+        # 為了避免 prompt 太長，可視情況只取最近 10 年
+        # years_data 格式預期為：
+        # [
+        #   {
+        #     "year": 2015,
+        #     "industry1": {"負債占資產比率": 0.35, "ROE": 0.12, ...},
+        #     "industry2": {...}
+        #   },
+        #   ...
+        # ]
+        # 這個 years_data 會由前端整理後送進來
+        import json
+        years_json_str = json.dumps(years_data, ensure_ascii=False)
+
+        prompt = f"""
+你是一位熟悉財務指標與產業分析的資深財務顧問。
+
+現在有兩個行業：「{industry1}」與「{industry2}」，提供了 2015–2024（或部分年度）的主要財務指標資料。
+資料格式如下（JSON 陣列，每一筆是一個年度）：
+
+years_data = {years_json_str}
+
+其中：
+- year：西元年度，例如 2015、2016。
+- industry1：該年度「{industry1}」行業的各項財務指標數值。
+- industry2：該年度「{industry2}」行業的各項財務指標數值。
+- 指標名稱可能包含：負債占資產比率、長期資金占不動產、流動比率、速動比率、利息保障倍數、
+  應收帳款週轉率、存貨週轉率、總資產週轉率、資產報酬率、純益率、權益報酬率、每股盈餘、
+  現金流量比率、現金再投資比率、現金流量允當比率、營運槓桿度、財務槓桿度… 等。
+
+請根據這些數字的「水準」與「變化趨勢」，撰寫一份中文「行業比較 AI 建議報告」，輸出格式請嚴格依照下列 5 大段落：
+
+一、整體比較結論
+- 用 2～3 句話總結哪個行業整體財務體質較佳，以及主要原因。
+- 可簡單說明：成長性、穩定度、風險高低。
+
+二、六大財務面向趨勢比較
+請依照下列六個面向，比較 10 年（或可用年度）中兩個行業的趨勢與差異：
+1. 財務結構（如負債占資產比率、長期資金占不動產比率）
+2. 償債能力（如流動比率、速動比率、利息保障倍數）
+3. 營運效率／經營績效（如應收帳款週轉率、存貨週轉率、總資產週轉率）
+4. 獲利能力（如資產報酬率 ROA、權益報酬率 ROE、純益率、每股盈餘）
+5. 現金流量（現金流量比率、現金再投資比率、現金流量允當比率）
+6. 槓桿度與風險（營運槓桿度、財務槓桿度）
+
+每一個面向：
+- 說明哪一個行業在大多數年度表現較好。
+- 若近五年與前五年有明顯差異，可簡單描述「有改善」或「有惡化」。
+
+三、「{industry1}」的優勢與風險
+- 條列 3～5 點說明 {industry1} 行業在財務結構、獲利能力、現金流、槓桿風險等方面的優缺點。
+- 若有波動較大的指標，請提醒可能的風險。
+
+四、「{industry2}」的優勢與風險
+- 條列 3～5 點說明 {industry2} 行業的優勢與風險，寫法與上一段相同。
+- 避免與上一段用語完全重複。
+
+五、未來 3～5 年發展與決策建議
+- 綜合上述趨勢，說明兩個行業未來 3～5 年可能的發展方向（成長性、穩定性、風險）。
+- 給出 2～4 個具體決策建議，例如：
+  - 偏好成長型投資時較適合哪一個行業？
+  - 偏好穩健／防禦型配置時應該注意哪一個行業的哪些風險？
+  - 若是撰寫報告或研究，可以聚焦在哪幾個指標做比較。
+
+注意事項：
+- 全文請使用正式但淺顯易懂的中文。
+- 不要輸出任何 Markdown 標記（例如 #、*、** 等），直接輸出純文字分段即可。
+- 不要捏造不存在的數字，只需根據給定的趨勢方向與相對高低來評論即可。
+"""
+
+        completion = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            temperature=0.4,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "你是嚴謹且善於解釋的財務顧問，會根據數字趨勢撰寫中文行業分析建議。"
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                },
+            ],
+        )
+
+        text = completion.choices[0].message.content.strip()
+        return jsonify({"text": text})
+
+    except Exception as e:
+        import traceback
+        print("❌ /chatgpt_industry_advice 錯誤：", e)
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/list_companies")
@@ -625,6 +741,131 @@ def export_report():
         print("❌ 匯出報告錯誤：", e)
         traceback.print_exc()
         return jsonify({"error": f"匯出報告失敗：{e}"}), 500
+
+@app.route("/export_industry_report", methods=["POST"])
+def export_industry_report():
+    """生成『行業比較』Word 報告（含指標表格＋趨勢圖＋AI 建議）"""
+    if not DOCX_OK:
+        return jsonify({"error": "伺服器未安裝 python-docx"}), 500
+
+    try:
+        payload = request.get_json(force=True) or {}
+
+        # ===== 1. 取前端傳來的資料 =====
+        industry1 = (payload.get("industry1") or "行業一").strip()
+        industry2 = (payload.get("industry2") or "行業二").strip()
+        year = payload.get("year")  # 可以是字串或數字，都接受
+
+        indicators = payload.get("indicators") or []   # [{name, industry1_value, industry1_light, industry2_value, industry2_light}]
+        charts = payload.get("charts") or []           # [{title, img_base64}]
+        ai_text = (payload.get("ai_text") or "").strip()  # 行業 AI 建議全文
+
+        # ===== 2. 準備輸出檔案路徑 =====
+        reports_dir = os.path.join(BASE_DIR, "reports")
+        os.makedirs(reports_dir, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        year_str = f"{year}" if year else "全部年份"
+
+        docx_name = f"{industry1}_vs_{industry2}_行業比較報告_{year_str}_{ts}.docx"
+        docx_path = os.path.join(reports_dir, docx_name)
+
+        # ===== 3. 建立 Word 文件 =====
+        doc = Document()
+
+        # ---------- 封面 ----------
+        title_text = f"行業比較財務分析報告（{year_str}）"
+        heading = doc.add_heading(title_text, level=0)
+        heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        sub_p = doc.add_paragraph(f"行業一：{industry1}    行業二：{industry2}")
+        sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        date_p = doc.add_paragraph(f"生成日期：{datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        doc.add_paragraph("（本報告由智慧財務分析與決策系統自動生成）").alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_page_break()
+
+        # ---------- 第一部分：年度行業平均值指標比較 ----------
+        doc.add_heading("第一部分：年度行業平均值指標比較", level=1)
+        if year:
+            doc.add_paragraph(f"本段整理 {year} 年「{industry1}」與「{industry2}」之行業平均財務指標。")
+
+        if indicators:
+            # 建立表格：指標名稱｜行業一｜行業一等級｜行業二｜行業二等級
+            table = doc.add_table(rows=1, cols=5)
+            table.style = "Table Grid"
+            hdr = table.rows[0].cells
+            hdr[0].text = "指標名稱"
+            hdr[1].text = industry1
+            hdr[2].text = f"{industry1} 等級"
+            hdr[3].text = industry2
+            hdr[4].text = f"{industry2} 等級"
+
+            light_map = {"green": "🟢", "yellow": "🟡", "red": "🔴", "gray": "⚪"}
+
+            for row in indicators:
+                name = str(row.get("name", ""))
+                v1 = str(row.get("industry1_value", ""))
+                v2 = str(row.get("industry2_value", ""))
+                l1 = light_map.get(row.get("industry1_light", "gray"), "⚪")
+                l2 = light_map.get(row.get("industry2_light", "gray"), "⚪")
+
+                cells = table.add_row().cells
+                cells[0].text = name
+                cells[1].text = v1
+                cells[2].text = l1
+                cells[3].text = v2
+                cells[4].text = l2
+        else:
+            doc.add_paragraph("（目前無行業指標比較資料）")
+
+        doc.add_page_break()
+
+        # ---------- 第二部分：歷年行業趨勢比較圖 ----------
+        doc.add_heading("第二部分：歷年行業趨勢比較圖", level=1)
+        if charts:
+            for i, chart in enumerate(charts, start=1):
+                title = chart.get("title", f"圖 {i}")
+                img_b64 = chart.get("img_base64")
+                if not img_b64:
+                    continue
+
+                doc.add_paragraph(f"{i}. {title}")
+                img_data = _b64_to_bytes(img_b64)
+                img_stream = BytesIO(img_data)
+                doc.add_picture(img_stream, width=Inches(6.5))
+                doc.add_paragraph("")  # 空一行
+        else:
+            doc.add_paragraph("（尚未提供行業趨勢圖資料）")
+
+        doc.add_page_break()
+
+        # ---------- 第三部分：AI 行業比較分析建議 ----------
+        doc.add_heading("第三部分：AI 行業比較分析建議", level=1)
+
+        if ai_text:
+            # 保留原本換行
+            for line in ai_text.split("\n"):
+                if line.strip():
+                    doc.add_paragraph(line.strip())
+                else:
+                    doc.add_paragraph("")  # 空行
+        else:
+            doc.add_paragraph("（尚未產生 AI 行業比較建議，可於系統中點選「產生 AI 建議」後再匯出報告。）")
+
+        # ===== 4. 儲存並回傳路徑 =====
+        doc.save(docx_path)
+
+        return jsonify({
+            "word": f"reports/{docx_name}"
+        }), 200
+
+    except Exception as e:
+        print("❌ export_industry_report 錯誤：", e)
+        traceback.print_exc()
+        return jsonify({"error": f"匯出行業比較報告失敗：{e}"}), 500
+
 
 if __name__ == "__main__":
     print("✅ Flask 啟動：http://127.0.0.1:5000")
