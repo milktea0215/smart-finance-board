@@ -458,7 +458,7 @@
         </div>
 
         <div class="chart-section">
-            <h2 class="chart-title">折線圖顯示區</h2>
+            <h2 class="chart-title">折線圖顯示區 (10年份)</h2>
             <div class="chart-wrapper">
 
                 <canvas id="trendChart"></canvas>
@@ -648,6 +648,16 @@
                 <canvas id="industryTrendChart"></canvas>
             </div>
         </div>
+    <!-- ================= 行業 AI 建議 ================= -->
+    <section class="ai-suggestion" id="industry-ai-section">
+        <h2>行業比較 AI 建議</h2>
+        <div id="industryAiAdvice" class="advice-block">
+            請先選擇行業一、行業二與年份，按下「開始行業比較」後，
+            再點擊下方按鈕產生 2015–2024 行業比較 AI 建議。
+        </div>
+        <button id="btnIndustryAI" class="export-btn">🤖 產生行業 AI 建議</button>
+        <button id="btnExportIndustryReport" class="export-btn">📤 匯出行業比較報告</button>
+    </section>
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
