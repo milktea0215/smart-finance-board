@@ -777,3 +777,129 @@ html {
     font-size: 1.1rem;         /* 較大的字 */
     padding: 8px 16px;         /* 比預設大一點的按鈕/下拉尺寸 */
 }
+/* ===== 全站背景改為淺藍色 ===== */
+body {
+    background-color: #E6F2FF;      /* 很淡的藍色 */
+}
+
+/* 主要內容區塊用白色/略帶藍白，讓層次更清楚 */
+.content-section {
+    background-color: #F7FBFF;     /* 比 body 稍微白一點 */
+}
+
+/* 卡片類區塊維持白色，搭配陰影會比較立體 */
+.feature-card,
+.indicator-section,
+.chart-section,
+.ai-suggestion,
+#section-industry {
+    background-color: #FFFFFF;
+}
+/* ===== Hero 橫幅區塊改顏色 ===== */
+.hero-banner {
+    background-color: #989cfc;   /* 比整體背景稍深一點的藍色 */
+}
+
+/* 若原本有一層灰色遮罩，這裡改成透明或很淡 */
+.hero-overlay {
+    background: transparent;     /* 如果你想要純色背景就用這行 */
+    /* 或者改成非常淡的透明白：
+    background: rgba(255, 255, 255, 0.05);
+    */
+}
+/* ===== 財報分析 - 搜尋列整體高度拉高 ===== */
+#section-financial .search-bar {
+    padding: 16px 24px;      /* 上下左右的空間加大 */
+}
+/* ===== 財報分析 - 輸入框、按鈕、年份選單放大 ===== */
+#section-financial .search-bar input[type="text"],
+#section-financial .search-bar select,
+#section-financial .search-bar button {
+    font-size: 18px;         /* 字體變大（原本大約 14px 左右） */
+    padding: 10px 18px;      /* 內距增加，按鈕和輸入框高度變高 */
+    height: 48px;            /* 統一高度，看起來比較整齊 */
+    border-radius: 6px;      /* 稍微圓角一點，質感比較好 */
+}
+
+/* 輸入框寬度再拉寬一些，方便輸入 */
+#section-financial #stockInput {
+    min-width: 260px;
+}
+
+/* 年份選單與前面元件有一點距離 */
+#section-financial .year-filter {
+    margin-left: 12px;
+}
+
+/* 搜尋按鈕再明顯一點 */
+#section-financial .search-bar button {
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+/* ===== 上方三個頁籤與淺藍背景搭配 ===== */
+.switch-buttons {
+    background-color: #0ab3ec;
+}
+
+.switch-btn {
+    font-size: 16px;
+}
+
+.switch-btn.active {
+    background-color: #f191e3;   /* 你現在的藍色可以保留 */
+    color: #fff;
+}
+/* ================== 行業比較說明區塊 ================== */
+
+.industry-guide {
+    margin-top: 24px;
+    margin-bottom: 48px;
+    padding: 20px 16px 8px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.industry-intro {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+/* 小卡片排列：桌機三欄、平板兩欄、手機一欄 */
+.industry-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.industry-step-card {
+    background-color: #F7FBFF;           /* 淺藍背景，和整體色系一致 */
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid #dde9ff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.industry-step-card h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: #1a4f8a;
+}
+
+.industry-step-card p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #444;
+}
+/* ================= 全站背景圖片 ================= */
+body {
+    background-image: url("背景圖.jpg");
+    background-size: cover;        /* 自動放大填滿 */
+    background-repeat: no-repeat;  /* 不重複 */
+    background-position: center;   /* 置中 */
+    background-attachment: fixed;  /* 捲動時背景固定，質感更好 */
+}
