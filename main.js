@@ -385,16 +385,26 @@ function renderTrendChart(indicatorName) {
         {
           label: "同產業年度平均",
           data: labels.map(y => {
-            const match = currentAverageByYear.find(r => String(r["年月"]) === String(y));
+            const yy = String(y).slice(0, 4); // 把 x 軸標籤轉成 4 位數年份
+
+            const match = currentAverageByYear.find(r => {
+      // 後端 average_by_year 可能有 年份 或 年月，兩種都支援
+              const yearFromYearCol = r["年份"] ? String(r["年份"]) : null;
+              const yearFromYmCol   = r["年月"] ? String(r["年月"]).slice(0, 4) : null;
+              const avgYear = yearFromYearCol || yearFromYmCol;
+              return avgYear === yy;
+            });
+
             return match ? match[indicatorName] : null;
-        }),
+          }),
           borderColor: "rgba(255, 99, 132, 1)",
           backgroundColor: "rgba(255, 99, 132, 0.1)",
           fill: false,
           borderDash: [6, 4],
           tension: 0.3,
           pointRadius: 3
-        },
+},
+
   // ⚫ 全期平均（水平虛線）
         {
           label: "全期產業平均",
