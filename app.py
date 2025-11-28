@@ -51,28 +51,124 @@ INDICATOR_COLUMNS = [
     '財務槓桿度',
 ]
 
+# ====================== 📂 從「高科技產業指標輸出」資料夾載入所有產業檔案 ======================
 
-EXCEL_PATH = os.path.join(BASE_DIR, "財務指標輸出.xlsx")
+# 產業資料暫存
+industry_files = {}         # {產業名稱: DataFrame（該產業完整檔案）}
+industry_companies = {}     # {產業名稱: [公司1, 公司2, ...]}
+industry_year_avg = {}      # {產業名稱: {2015: {...}, 2016: {...}}}
+industry_overall_avg = {}   # {產業名稱: {...}}
+global_company_map = {}     # {公司名稱(去空白後): [產業1, 產業2, ...]}
+df = pd.DataFrame()         # 🔹給 /list_companies 用的「全部公司資料」
 
-# 啟動時就讀檔，讀不到會直接在 Console 顯示錯誤
+def _clean_company_name(name):
+    """統一清理公司名稱：去空白與單引號"""
+    if not isinstance(name, str):
+        return ""
+    return name.replace(" ", "").replace("'", "").strip()
+
+def load_all_industries():
+    """啟動時掃描 高科技產業指標輸出 底下所有 *指標輸出.xlsx 檔案"""
+    global industry_files, industry_companies
+    global industry_year_avg, industry_overall_avg
+    global global_company_map, df
+
+    pattern = os.path.join(INDICATOR_OUTPUT_DIR, "*指標輸出.xlsx")
+    excel_files = glob.glob(pattern)
+
+    print("🔍 掃描產業檔案數量：", len(excel_files))
+
+    all_company_rows = []  # 最後會合併成 df
+
+    for path in excel_files:
+        base = os.path.basename(path)
+        # 例如：半導體指標輸出.xlsx -> 半導體
+        industry = base.replace("指標輸出.xlsx", "")
+        print(f"📘 載入產業：{industry}")
+
+        try:
+            tmp = pd.read_excel(path)
+        except Exception as e:
+            print(f"❌ 無法讀取 {path}：", e)
+            continue
+
+        if tmp.empty:
+            continue
+
+        # 確保「公司」是字串
+        tmp["公司"] = tmp["公司"].astype(str)
+
+        # 1️⃣ 一般公司資料（排除「平均值」列）
+        mask_company = ~tmp["公司"].str.contains("平均值", na=False)
+        company_df_ind = tmp[mask_company].copy()
+        all_company_rows.append(company_df_ind)
+
+        # 存到 industry_files
+        industry_files[industry] = tmp
+
+        # 該產業的公司清單（清理名稱）
+        comp_list = [_clean_company_name(x) for x in company_df_ind["公司"].tolist()]
+        industry_companies[industry] = comp_list
+
+        # 建立「公司 → 產業」對應表
+        for c in comp_list:
+            if not c:
+                continue
+            global_company_map.setdefault(c, []).append(industry)
+
+        # 2️⃣ 各年度平均值列：公司欄會長這樣「2015 平均值」
+        mask_year_avg = tmp["公司"].str.match(r"^\d{4} 平均值$", na=False)
+        year_avg_rows = tmp[mask_year_avg].copy()
+
+        year_avg_map = {}
+        for _, row in year_avg_rows.iterrows():
+            try:
+                y = int(row["年份"])
+            except Exception:
+                continue
+
+            row_dict = {}
+            for col in INDICATOR_COLUMNS:
+                v = row.get(col, None)
+                try:
+                    row_dict[col] = None if pd.isna(v) else float(v)
+                except Exception:
+                    row_dict[col] = None
+            year_avg_map[y] = row_dict
+
+        industry_year_avg[industry] = year_avg_map
+
+        # 3️⃣ 全期平均值列：公司欄 = 「平均值」
+        mask_overall = tmp["公司"] == "平均值"
+        overall_rows = tmp[mask_overall].copy()
+        if not overall_rows.empty:
+            row = overall_rows.iloc[0]
+            row_dict = {}
+            for col in INDICATOR_COLUMNS:
+                v = row.get(col, None)
+                try:
+                    row_dict[col] = None if pd.isna(v) else float(v)
+                except Exception:
+                    row_dict[col] = None
+            industry_overall_avg[industry] = row_dict
+
+    # 4️⃣ 合併所有產業的公司資料，做成一份總 df 給 /list_companies 與模糊搜尋用
+    if all_company_rows:
+        df = pd.concat(all_company_rows, ignore_index=True)
+    else:
+        df = pd.DataFrame()
+
+    print("📦 完成載入所有產業資料！")
+    print(f"　全部公司筆數：{len(df)}")
+
+# 🚀 啟動 Flask 時就先把所有產業檔案載入
 try:
-    df = pd.read_excel(EXCEL_PATH)
-
-# 🆕 分出不同類型資料
-    avg_df = df[df["公司"].astype(str).str.contains("平均值")].copy()
-    company_df = df[~df["公司"].astype(str).str.contains("平均值")].copy()
-
-# 🆕 分出各年度平均與全期平均
-    avg_by_year_df = avg_df[avg_df["公司"].astype(str).str.match(r"^\d{4} 平均值$")].copy()
-    avg_overall_df = avg_df[avg_df["公司"] == "平均值"].copy()
-
-    print(f"✅ 已載入 Excel：{EXCEL_PATH}")
-    print(f"　公司資料：{len(company_df)} 筆，年度平均：{len(avg_by_year_df)} 筆，全期平均：{len(avg_overall_df)} 筆")
-
+    load_all_industries()
 except Exception as e:
-    print("❌ 載入 Excel 失敗：", e)
+    print("❌ 載入高科技產業指標資料夾失敗：", e)
     traceback.print_exc()
     df = pd.DataFrame()
+
 
 # ===== 行業比較用共用工具函式 =====
 
@@ -124,40 +220,46 @@ def home():
 def ping():
     return jsonify({"ok": True})
 
+# ====================== 🔍 改寫：公司查詢（自動判斷所屬產業並帶入該產業平均） ======================
 @app.route("/get_indicator")
 def get_indicator():
-    import json
-    from flask import Response
     import numpy as np
-
-    global company_df, avg_by_year_df, avg_overall_df
 
     try:
         q = (request.args.get("company") or "").strip()
         if not q:
             return jsonify({"error": "請提供 company 參數"}), 400
 
-        norm = q.replace("'", "").replace(" ", "")
+        norm = _clean_company_name(q)
 
         if df.empty:
-            return jsonify({"error": "伺服器未成功載入 Excel"}), 500
+            return jsonify({"error": "伺服器未成功載入產業檔案"}), 500
 
-        # 🔍 模糊搜尋公司名稱
-        mask = df["公司"].astype(str).str.replace(" ", "", regex=False).str.contains(norm, na=False)
-        rows = df[mask]
+        # 🔍 在所有產業檔案裡尋找符合的公司
+        matched = []  # [(industry, rows)]
+        for industry, df_ind in industry_files.items():
+            # 只看非「平均值」的列
+            tmp = df_ind[~df_ind["公司"].astype(str).str.contains("平均值", na=False)]
+            mask = tmp["公司"].astype(str).str.replace(" ", "", regex=False).str.contains(norm, na=False)
+            rows = tmp[mask]
+            if not rows.empty:
+                matched.append((industry, rows))
 
-        if rows.empty:
+        if not matched:
             return jsonify({"error": f"找不到公司：'{q}'"}), 404
 
+        # 若同名出現在多個產業，隨機挑一個產業
+        import random
+        industry, rows = random.choice(matched)
+
+        print(f"🎯 公司 {q} 所屬產業：{industry}")
+
         # ------------------------------
-        # 🔧 清理數據：NaN、Inf、Timestamp
+        # 🔧 清理數據：NaN / Inf / Timestamp
         # ------------------------------
         clean_rows = rows.copy()
-
-        # NaN、inf、-inf → None
         clean_rows = clean_rows.replace([np.nan, np.inf, -np.inf], None)
 
-        # Timestamp → YYYY-MM-DD
         for col in clean_rows.columns:
             if pd.api.types.is_datetime64_any_dtype(clean_rows[col]):
                 clean_rows[col] = clean_rows[col].dt.strftime("%Y-%m-%d")
@@ -165,38 +267,38 @@ def get_indicator():
         # ------------------------------
         # 🧮 同產業平均值（年度與全期）
         # ------------------------------
-        # 年度平均值：轉成 dict 陣列
         avg_by_year = []
-        if not avg_by_year_df.empty:
-            avg_by_year = avg_by_year_df.replace({np.nan: None}).to_dict(orient="records")
+        year_avg_map = industry_year_avg.get(industry, {})
+        for year, data_map in sorted(year_avg_map.items(), key=lambda x: x[0]):
+            row = {"年份": year}
+            # 做一個「年月」欄位，前端會用 slice(0,4) 取年份
+            row["年月"] = f"{year}0101"
+            row.update(data_map)
+            avg_by_year.append(row)
 
-        # 全期平均值：取第一筆
-        avg_overall = {}
-        if not avg_overall_df.empty:
-            avg_overall = avg_overall_df.iloc[0].replace({np.nan: None}).to_dict()
-
+        avg_overall = industry_overall_avg.get(industry, {})
 
         # ------------------------------
         # 🔰 組合完整 JSON
         # ------------------------------
         result = {
             "company": q,
+            "industry": industry,                  # 🔹多帶一個欄位：所屬產業（你要顯示在前端也可以用）
             "data": clean_rows.to_dict(orient="records"),
-            "average_by_year": avg_by_year,
-            "average_overall": avg_overall
+            "average_by_year": avg_by_year,       # 🔹每年該產業的平均
+            "average_overall": avg_overall        # 🔹該產業全期平均
         }
-
 
         return jsonify(result)
 
     except Exception as e:
-        import traceback
         print("❌ /get_indicator 錯誤：", e)
         traceback.print_exc()
         return jsonify({
             "error": "伺服器內部錯誤",
             "detail": str(e)
         }), 500
+
 
 @app.route("/chatgpt_advice", methods=["POST"])
 def chatgpt_advice():
