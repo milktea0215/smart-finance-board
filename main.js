@@ -905,7 +905,6 @@ async function buildIndustryYearsDataForAI() {
   return years_data;
 }
 
-
 // ====================== 🧠 多年度 AI 建議（2015–2024 + 五年整體分析） ======================
 async function renderAllYearAIAdvice(allRows) {
   const box = document.getElementById("aiAdvice");
@@ -916,7 +915,14 @@ async function renderAllYearAIAdvice(allRows) {
   }
 
   const company = allRows[0]["公司"] || "未命名公司";
-  box.innerHTML = `💭 <em>AI 正在分析 ${company} 2015–2024 年的財務資料，請稍候...</em>`;
+
+  // 🔄 顯示 loading 圖示
+  box.innerHTML = `
+    <div class="ai-loading">
+      <div class="spinner"></div>
+      <p>AI 正在分析 ${company} 2015–2024 年的財務資料，請稍候...</p>
+    </div>
+  `;
 
   try {
     const res = await fetch(`${API_BASE}/chatgpt_multi_advice`, {
@@ -968,6 +974,7 @@ async function renderAllYearAIAdvice(allRows) {
     box.innerHTML = `❌ 無法取得多年度 AI 建議，請稍後再試。<br>${err.message}`;
   }
 }
+
 
 // ====================== 📤 匯出「行業比較」報告 ======================
 const btnExportIndustry = document.getElementById("exportIndustryReport");
@@ -1163,7 +1170,12 @@ if (btnIndustryAI) {
       return;
     }
 
-    adviceBox.innerHTML = `💭 <em>AI 正在分析 ${industry1} 與 ${industry2} 2015–2024 年的財務趨勢，請稍候...</em>`;
+    adviceBox.innerHTML = `
+      <div class="ai-loading">
+        <div class="spinner"></div>
+        <p>AI 正在分析 ${industry1} 與 ${industry2} 2015–2024 年的財務趨勢，請稍候...</p>
+      </div>
+    `;
 
     try {
       const years_data = await buildIndustryYearsDataForAI();
