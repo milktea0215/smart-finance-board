@@ -903,3 +903,78 @@ body {
     background-position: center;   /* 置中 */
     background-attachment: fixed;  /* 捲動時背景固定，質感更好 */
 }
+/* ===== AI Loading Spinner ===== */
+.ai-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.ai-loading .spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 4px solid #e0e0e0;
+  border-top-color: #3498db;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.indicator-rules {
+  margin-top: 40px;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.indicator-rules h3 {
+  margin-bottom: 8px;
+}
+
+.indicator-rules h4 {
+  margin-top: 18px;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.indicator-rules-note {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.indicator-rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.indicator-rules-table th,
+.indicator-rules-table td {
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.indicator-rules-table thead {
+  background: #eef6ff;
+  font-weight: 600;
+}
+.data-source-footer {
+  margin-top: 30px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #555;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px dashed #aac4e6;
+}
